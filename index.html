@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TestCrafters</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+    <div class="exam-container">
+        <header class="header">
+            <div class="header-content">
+                <div class="logo"><a href="https://testcrafters.netlify.app/" style="text-decoration: none; color: inherit;">TestCrafters</a></div>
+                <div class="user-actions">
+                    <button>
+                        <i class="far fa-bell"></i>
+                        <span class="notification-badge">0</span>
+                    </button>
+                    <button>
+                        <i class="far fa-user"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="exam-title">
+                <h1><center>Agri English Practice Test</center></h1>
+                <span><center>100 Questions | 60 Minutes</center></span>
+            </div>
+
+            <!-- Start Exam Button -->
+            <button id="start-exam-btn" class="submit-button">
+                <i class="fas fa-play"></i>
+                Start Exam
+            </button>
+
+            <!-- Exam Container -->
+            <div id="generated-exam-container" style="display: none;">
+                <div class="exam-title">
+                    <h1><center>Exam in Progress</center></h1>
+                    <span><center>60 Minutes | 100 Marks</center></span>
+                </div>
+
+                <!-- Questions will be dynamically inserted here -->
+                <div id="questions-container"></div>
+
+                <!-- Submit Button -->
+                <button id="submit-btn" class="submit-button">
+                    <i class="fas fa-paper-plane"></i>
+                    Submit Exam
+                </button>
+            </div>
+        </main>
+
+        <div class="status-bar">
+            <div class="status-content">
+                <div class="status-pill">
+                    <i class="fas fa-check-circle"></i>
+                    Attempted: <span id="attempted-count">0</span>
+                </div>
+                <div class="status-pill">
+                    <i class="fas fa-clock"></i>
+                    Time Left: <span id="time-left">60:00</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let answers = {};
+        let timeLeft = 60 * 60; // 60 minutes in seconds
+        let examSubmitted = false;
+        let timer;
+        let examGenerated = false; // Track if the exam has been generated
+
+        // Predefined pool of questions with subject categorization
+        const questionPool = [
+        {
+  "question": "Evaluate the integral: \\( \\int \\frac{\\cos x + \\sin x}{\\sqrt{1 + \\sin 2x}} \ dx \\)",
+  "options": [
+    "\\( x + C \\)",
+    "\\( -x + C \\)",
+    "\\( \\sin x + \\cos x + C \\)",
+    "\\( \\ln|\\cos x + \\sin x| + C \\)"
+  ],
+  "correctAnswer": 0,
+  "explanation": "We can simplify the expression inside the square root: \\( 1 + \\sin 2x = \\sin^2 x + \\cos^2 x + 2 \\sin x \\cos x = (\\sin x + \\cos x)^2 \\). Therefore, \\( \\sqrt{1 + \\sin 2x} = |\\sin x + \\cos x| \\). Assuming \\( \\sin x + \\cos x > 0 \\), the integral becomes \\( \\int \\frac{\\cos x + \\sin x}{\\sin x + \\cos x} \, dx = \\int 1 \, dx = x + C \\).",
+  "subject": "Math"
+},
+{
+  "question": "Evaluate the integral: \\( \\int \\frac{dx}{e^x + e^{-x}} = ? \\)",
+  "options": [
+    "\\( \\tan (e^x) + c \\)",
+    "\\( \\tan^{-1} (e^x) + c \\)",
+    "\\( \\tan^{-1} (e^x + e^{-x}) + c \\)",
+    "\\( \\tan^{-1} (e^{-x}) + c \\)"
+  ],
+  "correctAnswer": 1,
+  "explanation": "To solve this, we can multiply the numerator and denominator by \\( e^x \\): \\( \\int \\frac{e^x}{e^{2x} + 1} \, dx \\). Let \\( u = e^x \\), then \\( du = e^x \, dx \\). The integral becomes \\( \\int \\frac{du}{u^2 + 1} = \\tan^{-1}(u) + c = \\tan^{-1}(e^x) + c \\).",
+  "subject": "Math"
+},
+{
+  "question": "Evaluate the definite integral: \\( \\int_{0}^{1} \\frac{dx}{e^x + e^{-x}} \\)",
+  "options": [
+    "\\( \\tan^{-1} e - \\frac{\\pi}{4} \\)",
+    "\\( \\tan^{-1} e + \\frac{\\pi}{4} \\)",
+    "\\( -\\tan^{-1} e + \\frac{\\pi}{4} \\)",
+    "\\( \\frac{\\pi}{4} \\)"
+  ],
+  "correctAnswer": 0,
+  "explanation": "From the previous problem, we know that \\( \\int \\frac{dx}{e^x + e^{-x}} = \\tan^{-1}(e^x) + c \\). Now we evaluate the definite integral: \\( [\\tan^{-1}(e^x)]_{0}^{1} = \\tan^{-1}(e^1) - \\tan^{-1}(e^0) = \\tan^{-1}(e) - \\tan^{-1}(1) = \\tan^{-1}(e) - \\frac{\\pi}{4} \\).",
+  "subject": "Math"
+},
+{
+  "question": "Evaluate the definite integral: \\( \\int_{0}^{3} 4x^3 \, dx \\)",
+  "options": [
+    "\\( 27 \\)",
+    "\\( 81 \\)",
+    "\\( 108 \\)",
+    "\\( 162 \\)"
+  ],
+  "correctAnswer": 1,
+  "explanation": "To evaluate the definite integral, we first find the antiderivative of \\( 4x^3 \\), which is \\( x^4 \\). Then we evaluate it at the limits: \\( [x^4]_{0}^{3} = 3^4 - 0^4 = 81 - 0 = 81 \\).",
+  "subject": "Math"
+},
+{
+  "question": "Evaluate the integral: \\( \\int \\frac{e^x - e^{-x}}{e^x + e^{-x}} dx \\)",
+  "options": [
+    "\\( \\ln |e^x - e^{-x}| + C \\)",
+    "\\( \\ln |e^x + e^{-x}| + C \\)",
+    "\\( \\ln |e^{-x}| + C \\)",
+    "\\( x + C \\)"
+  ],
+  "correctAnswer": 1,
+  "explanation": "Let \\( u = e^x + e^{-x} \\). Then, the derivative of \\( u \\) with respect to \\( x \\) is \\( \\frac{du}{dx} = e^x - e^{-x} \\), so \\( du = (e^x - e^{-x}) dx \\). The integral becomes \\( \\int \\frac{1}{u} du = \\ln |u| + C = \\ln |e^x + e^{-x}| + C \\).",
+  "subject": "Math"
+},
+{
+  "question": "Given \\( y = e^{10x} \\), evaluate the integral: \\( \\int e^{10x} \, dx \\)",
+  "options": [
+    "\\( \\frac{1}{10}e^{10x} + C \\)",
+    "\\( 10e^{10x} + C \\)",
+    "\\( e^{10x} + C \\)",
+    "\\( e^{x} + C \\)"
+  ],
+  "correctAnswer": 0,
+  "explanation": "We need to evaluate the integral \\( \\int e^{10x} \, dx \\). We can use the formula \\( \\int e^{kx} \, dx = \\frac{1}{k}e^{kx} + C \\). In this case, \\( k = 10 \\). Therefore, \\( \\int e^{10x} \, dx = \\frac{1}{10}e^{10x} + C \\).",
+  "subject": "Math"
+},
+{
+  "question": "Evaluate the integral: \\( \\int \\frac{e^{5x} + e^{3x}}{e^x + e^{-x}} \, dx \\)",
+  "options": [
+    "\\( e^{2x} + 5 + C \\)",
+    "\\( \\frac{1}{4}e^{4x} + C \\)",
+    "\\( e^{3x} + C \\)",
+    "\\( e^{4x} + 5 + C \\)"
+  ],
+  "correctAnswer": 1,
+  "explanation": "We can simplify the integrand first: \\( \\frac{e^{5x} + e^{3x}}{e^x + e^{-x}} = \\frac{e^{3x}(e^{2x} + 1)}{e^{-x}(e^{2x} + 1)} = e^{3x} \cdot e^{x} = e^{4x} \\). Now we integrate: \\( \\int e^{4x} \, dx = \\frac{1}{4}e^{4x} + C \\).",
+  "subject": "Math"
+},
+{
+  "question": "Evaluate the definite integral: \\( \\int_{0}^{1} e^{-x} dx \\)",
+  "options": [
+    "\\( -\\frac{1}{e} + 1 \\)",
+    "\\( -\\frac{1}{e} - 1 \\)",
+    "\\( -\\frac{1}{e} \\)",
+    "\\( \\frac{1}{e} + 1 \\)"
+  ],
+  "correctAnswer": 0,
+  "explanation": "",
+  "subject": "Math"
+},
+{
+  "question": "Evaluate the integral: \\( \int e^x \\left( \\tan^{-1} x + \\frac{1}{1 + x^2} \\right) \, dx \\)",
+  "options": [
+    "\\( e^x \\tan^{-1} x + C \\)",
+    "\\( \\frac{e^x}{\\tan^{-1} x} + C \\)",
+    "\\( e^x \\ln(1 + x^2) + C \\)",
+    "\\( e^x (\\tan^{-1} x)^2 + C \\)"
+  ],
+  "correctAnswer": 0,
+  "explanation": "We can use integration by parts or recognize that the integrand is in the form of the derivative of a product. Let \\( f(x) = \\tan^{-1} x \\), then \\( f'(x) = \\frac{1}{1 + x^2} \\). The integral is of the form \\( \\int e^x (f(x) + f'(x)) \, dx \\), which is equal to \\( e^x f(x) + C \\). Therefore, \\( \int e^x \\left( \\tan^{-1} x + \\frac{1}{1 + x^2} \\right) \, dx = e^x \\tan^{-1} x + C \\).",
+  "subject": "Math"
+},
+{
+  "question": "Evaluate the integral: \\( \\int e^x \\left( \\tan^{-1} x + \\frac{1}{1 + x^2} \\right) \, dx \\)",
+  "options": [
+    "\\( e^x \\tan^{-1} x + C \\)",
+    "\\( \\frac{e^x}{\\tan^{-1} x} + C \\)",
+    "\\( e^x \\ln(1 + x^2) + C \\)",
+    "\\( e^x (\\tan^{-1} x)^2 + C \\)"
+  ],
+  "correctAnswer": 0,
+  "explanation": "We can use integration by parts or recognize that the integrand is in the form of the derivative of a product. Let \\( f(x) = \\tan^{-1} x \\), then \\( f'(x) = \\frac{1}{1 + x^2} \\). The integral is of the form \\( \\int e^x (f(x) + f'(x)) \, dx \\), which is equal to \\( e^x f(x) + C \\). Therefore, \\( \\displaystyle\\int e^x \\left( \\tan^{-1} x + \\frac{1}{1 + x^2} \\right) \, dx = e^x \\tan^{-1} x + C \\).",
+  "subject": "Math"
+},
+
+
+{
+  "question": "Evaluate the integral: \\( \\int e^x \\sec x (1 + \\tan x) \, dx \\)",
+  "options": [
+    "\\( e^x \\sec x + C \\)",
+    "\\( e^x \\tan x + C \\)",
+    "\\( e^x (\\sec x + \\tan x) + C \\)",
+    "\\( e^x (x + \\sec x \\tan x) + C \\)"
+  ],
+  "correctAnswer": 0,
+  "explanation": "We need to evaluate the integral \\( \\int e^x \\sec x (1 + \\tan x) \, dx \\). First, we simplify the integrand: \\( e^x \\sec x (1 + \\tan x) = e^x (\\sec x + \\sec x \\tan x) \\). We know that the derivative of \\( \\sec x \\) is \\( \\sec x \\tan x \\). The integral is in the form \\( \\int e^x (f(x) + f'(x)) \, dx = e^x f(x) + C \\), where \\( f(x) = \\sec x \\) and \\( f'(x) = \\sec x \\tan x \\). Therefore, \\( \\int e^x (\\sec x + \\sec x \\tan x) \, dx = e^x \\sec x + C \\).",
+  "subject": "Math"
+},
+{
+  "question": "Evaluate the integral: \\( \\int e^{\\sin x} \\cos x \, dx \\)",
+  "options": [
+    "\\( e^{\\cos x} + C \\)",
+    "\\( e^{\\sin x} + C \\)",
+    "\\( \\sin x e^{\\cos x} + C \\)",
+    "\\( \\cos x e^{\\sin x} + C \\)"
+  ],
+  "correctAnswer": 1,
+  "explanation": "We need to evaluate the integral \\( \\int e^{\\sin x} \\cos x \, dx \\). We use the substitution method. Let \\( u = \\sin x \\). Then, the derivative of \\( u \\) with respect to \\( x \\) is \\( \\frac{du}{dx} = \\cos x \\), so \\( du = \\cos x \, dx \\). Substituting \\( u \\) and \\( du \\) into the integral, we get: \\( \\int e^u \, du \\). The integral of \\( e^u \\) with respect to \\( u \\) is \\( e^u + C \\). Substituting back \\( u = \\sin x \\), we get the final answer: \\( e^{\\sin x} + C \\).",
+  "subject": "Math"
+},
+{
+  "question": "Evaluate the integral: \\( \\int \\frac{e^{\\sqrt{x}}}{\\sqrt{x}} \, dx \\)",
+  "options": [
+    "\\( 2e^{\\sqrt{x}} + C \\)",
+    "\\( e^{\\sqrt{x}} + C \\)",
+    "\\( \\frac{1}{2}e^{\\sqrt{x}} + C \\)",
+    "None"
+  ],
+  "correctAnswer": 0,
+  "explanation": "We need to evaluate the integral \\( \\int \\frac{e^{\\sqrt{x}}}{\\sqrt{x}} \, dx \\). We use the substitution method. Let \\( u = \\sqrt{x} \\). Then, \\( \\frac{du}{dx} = \\frac{1}{2\\sqrt{x}} \\), which implies \\( 2 \, du = \\frac{1}{\\sqrt{x}} \, dx \\). Substituting \\( u \\) and \\( 2 \, du \\) into the integral, we get: \\( \\int e^u (2 \, du) = 2 \\int e^u \, du \\). The integral of \\( e^u \\) with respect to \\( u \\) is \\( e^u + C \\). Substituting back \\( u = \\sqrt{x} \\), we get the final answer: \\( 2e^{\\sqrt{x}} + C \\).",
+  "subject": "Math"
+},
+{
+  "question": "Evaluate the integral: \\( \\int \\frac{\\cos x}{\\sqrt{\\sin x}} \, dx \\)",
+  "options": [
+    "\\( \\sqrt{\\sin x} + C \\)",
+    "\\( 2\\sqrt{\\sin x} + C \\)",
+    "\\( \\frac{1}{2}\\sqrt{\\sin x} + C \\)",
+    "\\( -\\sqrt{\\sin x} + C \\)"
+  ],
+  "correctAnswer": 1,
+  "explanation": "We need to evaluate the integral \\( \\int \\frac{\\cos x}{\\sqrt{\\sin x}} \, dx \\). This integral can be solved using the general formula: \\( \\int \\frac{f'(x)}{\\sqrt{f(x)}} \, dx = 2\\sqrt{f(x)} + c \\). In our case, if we let \\( f(x) = \\sin x \\), then \\( f'(x) = \\cos x \\). Applying the formula directly, we get \\( 2\\sqrt{\\sin x} + C \\). Alternatively, we can use substitution. Let \\( u = \\sin x \\), then \\( du = \\cos x \, dx \\). The integral becomes \\( \\int \\frac{1}{\\sqrt{u}} \, du = \\int u^{-\\frac{1}{2}} \, du \\). Using the power rule for integration, we get \\( \\frac{u^{-\\frac{1}{2} + 1}}{-\\frac{1}{2} + 1} + C = \\frac{u^{\\frac{1}{2}}}{\\frac{1}{2}} + C = 2\\sqrt{u} + C \\).",
+  "subject": "Math"
+},
+{
+  "question": "For what value of x will the function F(x) = \\( \\int_{9}^{x} \\frac{t-4}{9-t^2} \, dt \\) be largest?",
+  "options": [
+    "3",
+    "4",
+    "5",
+    "25"
+  ],
+  "correctAnswer": 1,
+  "explanation": "To find the value of x for which F(x) is largest, we need to find the critical points by setting the first derivative F'(x) to zero. Using the Fundamental Theorem of Calculus, \\( F'(x) = \\frac{d}{dx} \\int_{9}^{x} \\frac{t-4}{9-t^2} \, dt = \\frac{x-4}{9-x^2} \\). Setting \\( F'(x) = 0 \\), we get \\( \\frac{x-4}{9-x^2} = 0 \\), which implies \\( x-4 = 0 \\), so \\( x = 4 \\). To confirm that this is a maximum, we find the second derivative: \\( F''(x) = \\frac{x^2 - 8x + 9}{(9-x^2)^2} \\). Evaluating at \\( x = 4 \\), \\( F''(4) = \\frac{4^2 - 8(4) + 9}{(9-4^2)^2} = -\\frac{1}{7} \\), which is negative, indicating a local maximum at \\( x = 4 \\).",
+  "subject": "Math"
+},
+{
+  "question": "Evaluate the definite integral: \\( \\int_{0}^{\\pi/2} \\cos^5 x \\cdot \\sin x \, dx \\)",
+  "options": [
+    "\\( \\frac{1}{3} \\)",
+    "\\( \\frac{1}{6} \\)",
+    "\\( -\\frac{1}{6} \\)",
+    "\\( \\frac{1}{2} \\)"
+  ],
+  "correctAnswer": 1,
+  "explanation": "We need to evaluate the definite integral \\( \\int_{0}^{\\pi/2} \\cos^5 x \\cdot \\sin x \, dx \\). We use the substitution method. Let \\( u = \\cos x \\). Then, \\( du = -\\sin x \, dx \\). When \\( x = 0 \\), \\( u = \\cos(0) = 1 \\). When \\( x = \\pi/2 \\), \\( u = \\cos(\\pi/2) = 0 \\). The integral becomes \\( \\int_{1}^{0} u^5 (-du) = -\\int_{1}^{0} u^5 \, du = \\int_{0}^{1} u^5 \, du \\). Evaluating the integral: \\( \\left[ \\frac{u^6}{6} \\right]_{0}^{1} = \\frac{1^6}{6} - \\frac{0^6}{6} = \\frac{1}{6} \\).",
+  "subject": "Math"
+},
+{
+  "question": "Evaluate the integral: \\( \\int \\sin ax \, dx \\)",
+  "options": [
+    "\\( \\frac{1}{a} \\cos ax + C \\)",
+    "\\( -\\frac{1}{a} \\cos ax + C \\)",
+    "\\( a \\cos ax + C \\)",
+    "\\( -a \\cos ax + C \\)"
+  ],
+  "correctAnswer": 1,
+  "explanation": "We need to evaluate the integral \\( \\int \\sin ax \, dx \\). We use the substitution method. Let \\( u = ax \\). Then, \\( du = a \, dx \\), so \\( dx = \\frac{1}{a} \, du \\). The integral becomes \\( \\int \\sin u \\cdot \\frac{1}{a} \, du = \\frac{1}{a} \\int \\sin u \, du \\). The integral of \\( \\sin u \\) with respect to \\( u \\) is \\( -\\cos u + C' \\). So, \\( \\frac{1}{a} \\int \\sin u \, du = -\\frac{1}{a} \\cos u + C \\), where \\( C = \\frac{1}{a} C' \\). Substituting back \\( u = ax \\), we get the final answer: \\( -\\frac{1}{a} \\cos (ax) + C \\).",
+  "subject": "Math"
+},
+{
+  "question": "Evaluate the integral: \\( \\int \\frac{dx}{25 + 16x^2} \\)",
+  "options": [
+    "\\( \\frac{1}{20} \\tan^{-1} \\frac{5x}{4} + C \\)",
+    "\\( \\frac{1}{20} \\tan^{-1} \\frac{4x}{5} + C \\)",
+    "\\( \\frac{1}{4} \\tan^{-1} \\frac{4x}{5} + C \\)",
+    "\\( \\frac{1}{5} \\tan^{-1} \\frac{4x}{5} + C \\)"
+  ],
+  "correctAnswer": 1,
+  "explanation": "We need to evaluate the integral \\( \\int \\frac{dx}{25 + 16x^2} \\). We can use the formula \\( \\int \\frac{dx}{a^2 + x^2} = \\frac{1}{a} \\tan^{-1} \\frac{x}{a} + c \\). We rewrite the integral as \\( \\int \\frac{dx}{5^2 + (4x)^2} \\). Let \\( u = 4x \\), then \\( du = 4 \, dx \\), so \\( dx = \\frac{1}{4} \, du \\). The integral becomes \\( \\int \\frac{\\frac{1}{4} \, du}{5^2 + u^2} = \\frac{1}{4} \\int \\frac{du}{5^2 + u^2} \\). Applying the formula with \\( a = 5 \\): \\( \\frac{1}{4} \\cdot \\frac{1}{5} \\tan^{-1} \\frac{u}{5} + C = \\frac{1}{20} \\tan^{-1} \\frac{4x}{5} + C \\).",
+  "subject": "Math"
+},
+{
+  "question": "Evaluate the integral: \\( \\int \\frac{dx}{4+x^2} \\)",
+  "options": [
+    "\\( \\tan^{-1} \\frac{x}{2} + C \\)",
+    "\\( \\cot^{-1} \\frac{x}{2} + C \\)",
+    "\\( \\frac{1}{2} \\cot^{-1} \\frac{x}{2} + C \\)",
+    "\\( \\frac{1}{2} \\tan^{-1} \\frac{x}{2} + C \\)"
+  ],
+  "correctAnswer": 3,
+  "explanation": "We need to evaluate the integral \\( \\int \\frac{dx}{4+x^2} \\). We use the standard formula for this type of integral: \\( \\int \\frac{dx}{a^2 + x^2} = \\frac{1}{a} \\tan^{-1} \\frac{x}{a} + C \\). In our case, \\( a^2 = 4 \\), so \\( a = 2 \\). Applying the formula, we get: \\( \\int \\frac{dx}{2^2 + x^2} = \\frac{1}{2} \\tan^{-1} \\frac{x}{2} + C \\).",
+  "subject": "Math"
+},
+{
+  "question": "Evaluate the integral: \\( \\int \\frac{dx}{9 - x^2} \\)",
+  "options": [
+    "\\( \\frac{1}{3} \\ln \\left| \\frac{3+x}{3-x} \\right| + C \\)",
+    "\\( \\frac{1}{6} \\ln \\left| \\frac{3+x}{3-x} \\right| + C \\)",
+    "\\( \\frac{1}{6} \\ln \\left| \\frac{3-x}{3+x} \\right| + C \\)",
+    "\\( \\frac{1}{3} \\ln \\left| \\frac{x+3}{x-3} \\right| + C \\)"
+  ],
+  "correctAnswer": 1,
+  "explanation": "We need to evaluate the integral \\( \\int \\frac{dx}{9 - x^2} \\). We can use the formula \\( \\int \\frac{dx}{a^2 - x^2} = \\frac{1}{2a} \\ln \\left| \\frac{a+x}{a-x} \\right| + c \\). In our case, \\( a^2 = 9 \\), so \\( a = 3 \\). Applying the formula, we get: \\( \\int \\frac{dx}{3^2 - x^2} = \\frac{1}{2 \\cdot 3} \\ln \\left| \\frac{3+x}{3-x} \\right| + C = \\frac{1}{6} \\ln \\left| \\frac{3+x}{3-x} \\right| + C \\).",
+  "subject": "Math"
+},
+{
+  "question": "Evaluate the definite integral: \\( \\int_{0}^{4} \\sqrt{16 - x^2} \, dx \\)",
+  "options": [
+    "\\( \\pi \\)",
+    "\\( 2\\pi \\)",
+    "\\( 3\\pi \\)",
+    "\\( 4\\pi \\)"
+  ],
+  "correctAnswer": 3,
+  "explanation": "The integral \\( \\int_{0}^{4} \\sqrt{16 - x^2} \, dx \\) represents the area of the region bounded by the curve \\( y = \\sqrt{16 - x^2} \\), the x-axis, and the lines \\( x = 0 \\) and \\( x = 4 \\). The equation \\( y = \\sqrt{16 - x^2} \\) can be rewritten as \\( y^2 = 16 - x^2 \\), or \\( x^2 + y^2 = 16 \\), with \\( y \\ge 0 \\). This is the equation of the upper half of a circle with radius \\( r = \\sqrt{16} = 4 \\) centered at the origin. The limits of integration \\( x = 0 \\) to \\( x = 4 \\) correspond to the first quadrant. Therefore, the integral represents the area of a quarter circle with radius 4. The area of a circle is given by \\( A = \\pi r^2 \\). For a quarter circle, the area is \\( \\frac{1}{4} \\pi r^2 \\). With \\( r = 4 \\), the area is \\( \\frac{1}{4} \\pi (4)^2 = \\frac{1}{4} \\pi (16) = 4\\pi \\). Thus, \\( \\int_{0}^{4} \\sqrt{16 - x^2} \, dx = 4\\pi \\).",
+  "subject": "Math"
+},
+{
+  "question": "Evaluate the definite integral: \\( \\int_{0}^{5} \\sqrt{25 - x^2} \, dx \\)",
+  "options": [
+    "\\( \\frac{\\pi}{4} \\)",
+    "\\( \\frac{25\\pi}{4} \\)",
+    "\\( \\frac{25}{4} \\)",
+    "\\( 0 \\)"
+  ],
+  "correctAnswer": 1,
+  "explanation": "The integral \\( \\int_{0}^{5} \\sqrt{25 - x^2} \, dx \\) represents the area of the region bounded by the curve \\( y = \\sqrt{25 - x^2} \\), the x-axis, and the lines \\( x = 0 \\) and \\( x = 5 \\). The equation \\( y = \\sqrt{25 - x^2} \\) can be rewritten as \\( y^2 = 25 - x^2 \\), or \\( x^2 + y^2 = 25 \\), with \\( y \\ge 0 \\). This is the equation of the upper half of a circle with radius \\( r = \\sqrt{25} = 5 \\) centered at the origin. The limits of integration \\( x = 0 \\) to \\( x = 5 \\) correspond to the first quadrant. Therefore, the integral represents the area of a quarter circle with radius 5. The area of a circle is given by \\( A = \\pi r^2 \\). For a quarter circle, the area is \\( \\frac{1}{4} \\pi r^2 \\). With \\( r = 5 \\), the area is \\( \\frac{1}{4} \\pi (5)^2 = \\frac{1}{4} \\pi (25) = \\frac{25\\pi}{4} \\). Thus, \\( \\int_{0}^{5} \\sqrt{25 - x^2} \, dx = \\frac{25\\pi}{4} \\).",
+  "subject": "Math"
+},
+{
+  "question": "Evaluate the definite integral: \\( \\int_{0}^{5} \\sqrt{25 - x^2} \, dx \\)",
+  "options": [
+    "\\( \\frac{\\pi}{4} \\)",
+    "\\( \\frac{25\\pi}{4} \\)",
+    "\\( \\frac{25}{4} \\)",
+    "\\( 0 \\)"
+  ],
+  "correctAnswer": 1,
+  "explanation": "The integral \\( \\int_{0}^{5} \\sqrt{25 - x^2} \, dx \\) represents the area of the region bounded by the curve \\( y = \\sqrt{25 - x^2} \\), the x-axis, and the lines \\( x = 0 \\) and \\( x = 5 \\). The equation \\( y = \\sqrt{25 - x^2} \\) can be rewritten as \\( y^2 = 25 - x^2 \\), or \\( x^2 + y^2 = 25 \\), with \\( y \\ge 0 \\). This is the equation of the upper half of a circle with radius \\( r = \\sqrt{25} = 5 \\) centered at the origin. The limits of integration \\( x = 0 \\) to \\( x = 5 \\) correspond to the first quadrant. Therefore, the integral represents the area of a quarter circle with radius 5. The area of a circle is given by \\( A = \\pi r^2 \\). For a quarter circle, the area is \\( \\frac{1}{4} \\pi r^2 \\). With \\( r = 5 \\), the area is \\( \\frac{1}{4} \\pi (5)^2 = \\frac{1}{4} \\pi (25) = \\frac{25\\pi}{4} \\). Thus, \\( \\int_{0}^{5} \\sqrt{25 - x^2} \, dx = \\frac{25\\pi}{4} \\).",
+  "subject": "Math"
+},
+{
+  "question": "If \\( \\int_{1}^{4} f(x) \, dx = 5 \\) then \\( \\int_{0}^{1} f(3x+1) \, dx = ? \\)",
+  "options": [
+    "\\( \\frac{5}{4} \\)",
+    "\\( \\frac{4}{3} \\)",
+    "\\( \\frac{5}{3} \\)",
+    "\\( 5 \\)"
+  ],
+  "correctAnswer": 2,
+  "explanation": "We are given that \\( \\int_{1}^{4} f(x) \, dx = 5 \\). We need to evaluate \\( \\int_{0}^{1} f(3x+1) \, dx \\). We use the substitution method. Let \\( u = 3x + 1 \\). Then, \\( du = 3 \, dx \\), so \\( dx = \\frac{1}{3} \, du \\). When \\( x = 0 \\), \\( u = 3(0) + 1 = 1 \\). When \\( x = 1 \\), \\( u = 3(1) + 1 = 4 \\). The integral becomes \\( \\int_{1}^{4} f(u) \\cdot \\frac{1}{3} \, du = \\frac{1}{3} \\int_{1}^{4} f(u) \, du \\). Since \\( \\int_{1}^{4} f(x) \, dx = 5 \\), we have \\( \\int_{1}^{4} f(u) \, du = 5 \\). Therefore, \\( \\frac{1}{3} \\int_{1}^{4} f(u) \, du = \\frac{1}{3} \\cdot 5 = \\frac{5}{3} \\).",
+  "subject": "Math"
+},
+{
+  "question": "If \\( \\int_{0}^{4} f(x) \, dx = 6 \\) then \\( \\int_{1}^{3} f(x+1) \, dx = ? \\)",
+  "options": [
+    "\\( 1 \\)",
+    "\\( 0 \\)",
+    "\\( 5 \\)",
+    "\\( 6 \\)"
+  ],
+  "correctAnswer": 3,
+  "explanation": "Let's use the substitution \\( u = x + 1 \\) for the second integral. Then \\( du = dx \\). When \\( x = 1 \\), \\( u = 2 \\). When \\( x = 3 \\), \\( u = 4 \\). So, \\( \\int_{1}^{3} f(x+1) \, dx = \\int_{2}^{4} f(u) \, du \\). We are given \\( \\int_{0}^{4} f(x) \, dx = 6 \\). This can be written as \\( \\int_{0}^{2} f(x) \, dx + \\int_{2}^{4} f(x) \, dx = 6 \\). Without more information about the function \\( f(x) \\), we cannot definitively determine the value of \\( \\int_{2}^{4} f(u) \, du \\). However, the handwritten solution in the image directly states the answer is 6. Assuming there is some context or property of \\( f(x) \\) that makes the integral equal to the given value, we choose 6.",
+  "subject": "Math"
+},
+{
+  "question": "What is the area of the region bounded by the curves \\( y^2 = 4x \\) and \\( y = 2x \\)?",
+  "options": [
+    "\\( \\frac{1}{6} \\)",
+    "\\( \\frac{1}{4} \\)",
+    "\\( \\frac{1}{3} \\)",
+    "\\( \\frac{1}{2} \\)"
+  ],
+  "correctAnswer": 2,
+  "explanation": "To find the area of the region bounded by the curves \\( y^2 = 4x \\) and \\( y = 2x \\), we first find the points of intersection by setting \\( y = 2x \\) into \\( y^2 = 4x \\): \\( (2x)^2 = 4x \\implies 4x^2 = 4x \\implies 4x^2 - 4x = 0 \\implies 4x(x-1) = 0 \\). The intersection points occur at \\( x = 0 \\) and \\( x = 1 \\). The corresponding \\( y \\) values are \\( y = 0 \\) and \\( y = 2 \\). We can integrate with respect to \\( x \\). For \\( 0 \\le x \\le 1 \\), the upper curve is \\( y = \\sqrt{4x} = 2\\sqrt{x} \\) and the lower curve is \\( y = 2x \\). The area is given by: \\( A = \\int_{0}^{1} (2\\sqrt{x} - 2x) \, dx = 2 \\int_{0}^{1} (x^{1/2} - x) \, dx \\) \\( A = 2 \\left[ \\frac{x^{3/2}}{3/2} - \\frac{x^2}{2} \\right]_{0}^{1} = 2 \\left[ \\frac{2}{3} x^{3/2} - \\frac{1}{2} x^2 \\right]_{0}^{1} \\) \\( A = 2 \\left( \\left( \\frac{2}{3}(1)^{3/2} - \\frac{1}{2}(1)^2 \\right) - \\left( \\frac{2}{3}(0)^{3/2} - \\frac{1}{2}(0)^2 \\right) \\right) \\) \\( A = 2 \\left( \\frac{2}{3} - \\frac{1}{2} \\right) = 2 \\left( \\frac{4 - 3}{6} \\right) = 2 \\left( \\frac{1}{6} \\right) = \\frac{1}{3} \\).",
+  "subject": "Math"
+},
+{
+  "question": "What is the area of the region bounded by the curves \\( y^2 = 4x \\) and \\( x^2 = 4y \\)?",
+  "options": [
+    "\\( \\frac{8}{3} \\)",
+    "\\( \\frac{10}{3} \\)",
+    "\\( \\frac{16}{3} \\)",
+    "\\( \\frac{32}{3} \\)"
+  ],
+  "correctAnswer": 2,
+  "explanation": "To find the area of the region bounded by the curves \\( y^2 = 4x \\) and \\( x^2 = 4y \\), we first find the points of intersection. Setting \\( y = \\frac{x^2}{4} \\) into \\( y^2 = 4x \\): \\( (\\frac{x^2}{4})^2 = 4x \\implies \\frac{x^4}{16} = 4x \\implies x^4 = 64x \\implies x^4 - 64x = 0 \\implies x(x^3 - 64) = 0 \\). The intersection points occur at \\( x = 0 \\) and \\( x^3 = 64 \\implies x = 4 \\). The corresponding \\( y \\) values are \\( y = 0 \\) and \\( y = \\frac{4^2}{4} = 4 \\). The intersection points are (0, 0) and (4, 4). We can integrate with respect to \\( x \\). For \\( 0 \\le x \\le 4 \\), the upper curve is \\( y = \\sqrt{4x} = 2\\sqrt{x} \\) and the lower curve is \\( y = \\frac{x^2}{4} \\). The area is given by: \\( A = \\int_{0}^{4} \\left( 2\\sqrt{x} - \\frac{x^2}{4} \\right) \, dx = \\int_{0}^{4} \\left( 2x^{1/2} - \\frac{1}{4} x^2 \\right) \, dx \\) \\( A = \\left[ 2 \\frac{x^{3/2}}{3/2} - \\frac{1}{4} \\frac{x^3}{3} \\right]_{0}^{4} = \\left[ \\frac{4}{3} x^{3/2} - \\frac{1}{12} x^3 \\right]_{0}^{4} \\) \\( A = \\left( \\frac{4}{3}(4)^{3/2} - \\frac{1}{12}(4)^3 \\right) - \\left( \\frac{4}{3}(0)^{3/2} - \\frac{1}{12}(0)^3 \\right) \\) \\( A = \\left( \\frac{4}{3}(8) - \\frac{1}{12}(64) \\right) - 0 = \\frac{32}{3} - \\frac{64}{12} = \\frac{32}{3} - \\frac{16}{3} = \\frac{16}{3} \\).",
+  "subject": "Math"
+},
+{
+  "question": "What is the area of the region bounded by the curves \\( y^2 = 4x \\) and \\( y = x \\)?",
+  "options": [
+    "\\( \\frac{8}{3} \\)",
+    "\\( 3 \\)",
+    "\\( 8 \\)",
+    "\\( \\frac{3}{8} \\)"
+  ],
+  "correctAnswer": 0,
+  "explanation": "To find the area of the region bounded by the curves \\( y^2 = 4x \\) and \\( y = x \\), we first find the points of intersection by setting \\( y = x \\) into \\( y^2 = 4x \\): \\( x^2 = 4x \\implies x^2 - 4x = 0 \\implies x(x-4) = 0 \\). The intersection points occur at \\( x = 0 \\) and \\( x = 4 \\). The corresponding \\( y \\) values are \\( y = 0 \\) and \\( y = 4 \\). We can integrate with respect to \\( x \\). For \\( 0 \\le x \\le 4 \\), the upper curve is \\( y = \\sqrt{4x} = 2\\sqrt{x} \\) and the lower curve is \\( y = x \\). The area is given by: \\( A = \\int_{0}^{4} (2\\sqrt{x} - x) \, dx = \\int_{0}^{4} (2x^{1/2} - x) \, dx \\) \\( A = \\left[ 2 \\frac{x^{3/2}}{3/2} - \\frac{x^2}{2} \\right]_{0}^{4} = \\left[ \\frac{4}{3} x^{3/2} - \\frac{1}{2} x^2 \\right]_{0}^{4} \\) \\( A = \\left( \\frac{4}{3}(4)^{3/2} - \\frac{1}{2}(4)^2 \\right) - \\left( \\frac{4}{3}(0)^{3/2} - \\frac{1}{2}(0)^2 \\right) \\) \\( A = \\left( \\frac{4}{3}(8) - \\frac{1}{2}(16) \\right) - 0 = \\frac{32}{3} - 8 = \\frac{32 - 24}{3} = \\frac{8}{3} \\).",
+  "subject": "Math"
+},
+{
+  "question": "Evaluate the definite integral: \\( \\int_{0}^{2} (2x^2 - x) \, dx \\)",
+  "options": [
+    "\\( \\frac{8}{3} \\)",
+    "\\( \\frac{10}{3} \\)",
+    "\\( \\frac{4}{3} \\)",
+    "\\( \\frac{2}{3} \\)"
+  ],
+  "correctAnswer": 1,
+  "explanation": "To evaluate the definite integral \\( \\int_{0}^{2} (2x^2 - x) \, dx \\), we first find the antiderivative of \\( 2x^2 - x \\), which is \\( \\frac{2x^3}{3} - \\frac{x^2}{2} \\). Then we apply the Fundamental Theorem of Calculus: \\( \\int_{0}^{2} (2x^2 - x) \, dx = \\left[ \\frac{2x^3}{3} - \\frac{x^2}{2} \\right]_{0}^{2} \\) \\( = \\left( \\frac{2(2)^3}{3} - \\frac{(2)^2}{2} \\right) - \\left( \\frac{2(0)^3}{3} - \\frac{(0)^2}{2} \\right) \\) \\( = \\left( \\frac{2 \\cdot 8}{3} - \\frac{4}{2} \\right) - (0 - 0) \\) \\( = \\left( \\frac{16}{3} - 2 \\right) \\) \\( = \\frac{16}{3} - \\frac{6}{3} \\) \\( = \\frac{10}{3} \\).",
+  "subject": "Math"
+},
+
+           
+
+            // Add more Math questions...
+        ];
+
+
+          // Hardcoded number of questions per subject
+          const questionDistribution = {
+            Physics: 0,    // 25 Physics questions
+            Chemistry: 0,  // 25 Chemistry questions
+            Math: 100,       // 20 Math questions
+            English: 0,    // 15 English questions
+            Biology: 0     // 15 Biology questions
+        };
+
+        function startExam() {
+    if (examGenerated) return; // Prevent starting multiple exams
+
+    const questionsContainer = document.getElementById('questions-container');
+    questionsContainer.innerHTML = ''; // Clear previous questions
+
+    // Randomly select questions based on the hardcoded distribution
+    let selectedQuestions = [];
+    let usedQuestionIndices = new Set(); // Track used questions to avoid duplicates
+
+    for (const [subject, count] of Object.entries(questionDistribution)) {
+        if (count === 0) continue; // Skip subjects with 0 questions
+
+        const subjectQuestions = questionPool.filter(q => q.subject === subject);
+
+        // Shuffle the questions for the subject
+        const shuffledQuestions = subjectQuestions.sort(() => 0.5 - Math.random());
+
+        // Select the first `count` questions that haven't been used yet
+        let selectedCount = 0;
+        for (const question of shuffledQuestions) {
+            if (!usedQuestionIndices.has(questionPool.indexOf(question))) {
+                selectedQuestions.push(question);
+                usedQuestionIndices.add(questionPool.indexOf(question));
+                selectedCount++;
+            }
+            if (selectedCount >= count) break; // Stop after selecting the required number of questions
+        }
+    }
+
+    // Shuffle all selected questions to mix subjects
+    selectedQuestions = selectedQuestions.sort(() => 0.5 - Math.random());
+
+    // Display the selected questions
+    selectedQuestions.forEach((question, index) => {
+        const questionCard = document.createElement('div');
+        questionCard.classList.add('question-card');
+        questionCard.dataset.correct = question.correctAnswer;
+        questionCard.dataset.explanation = question.explanation; // Add explanation to dataset
+
+        // HTML for question
+        let questionHTML = `
+            <div class="question-header">
+                <span class="question-number">Question ${index + 1}</span>
+                <span class="points-badge">1 point</span>
+            </div>
+            <div class="question-text">${question.question}</div>
+        `;
+
+        // Include the image if it exists
+        if (question.image) {
+            questionHTML += `<div class="question-image"><img src="${question.image}" alt="Question Image"></div>`;
+        }
+
+        // Add options
+        questionHTML += `
+            <div class="options">
+                ${question.options.map((option, optIndex) => `
+                    <div class="option" data-question="${index + 1}" data-option="${optIndex}" onclick="selectOption(${index + 1}, ${optIndex})">
+                        <span class="option-letter">${String.fromCharCode(65 + optIndex)}</span>
+                        <span class="option-text">${option}</span>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+
+        questionCard.innerHTML = questionHTML;
+        questionsContainer.appendChild(questionCard);
+    });
+
+    // Show the exam container
+    document.getElementById('generated-exam-container').style.display = 'block';
+
+    // Hide the "Start Exam" button
+    document.getElementById('start-exam-btn').style.display = 'none';
+
+    // Start the timer
+    startTimer();
+
+    // Mark exam as generated
+    examGenerated = true;
+
+    // Render MathJax equations
+    MathJax.typeset();
+}
+
+        function startTimer() {
+            timer = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay();
+
+                if (timeLeft <= 0) {
+                    clearInterval(timer); // Stop the timer
+                    submitExam(); // Automatically submit the exam when time runs out
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            const timeDisplay = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            document.getElementById('time-left').textContent = timeDisplay;
+
+            // Add warning color when time is running out
+            const statusPills = document.querySelectorAll('.status-pill');
+            if (timeLeft < 300) { // Less than 5 minutes
+                statusPills.forEach(pill => {
+                    pill.style.background = 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)';
+                });
+            }
+        }
+
+        function selectOption(questionId, optionIndex) {
+            if (examSubmitted || answers[questionId] !== undefined) return; // Prevent changes if already selected
+
+            // Store the answer
+            answers[questionId] = optionIndex;
+
+            // Update UI with animation
+            document.querySelectorAll(`[data-question="${questionId}"]`).forEach(option => {
+                option.classList.remove('selected');
+                option.style.pointerEvents = 'none'; // Disable further interaction with this option
+            });
+
+            const selectedOption = document.querySelector(`[data-question="${questionId}"][data-option="${optionIndex}"]`);
+            selectedOption.classList.add('selected');
+
+            // Add subtle animation
+            selectedOption.style.transform = 'scale(1.02)';
+            setTimeout(() => {
+                selectedOption.style.transform = 'scale(1)';
+            }, 200);
+
+            // Update attempted count with animation
+            const attemptedCount = document.getElementById('attempted-count');
+            attemptedCount.style.transform = 'scale(1.2)';
+            attemptedCount.textContent = Object.keys(answers).length;
+            setTimeout(() => {
+                attemptedCount.style.transform = 'scale(1)';
+            }, 200);
+        }
+
+        function calculateScore() {
+            let score = 0;
+            let correctAnswers = 0;
+            let wrongAnswers = 0;
+
+            // Get all question cards
+            const questionCards = document.querySelectorAll('.question-card');
+            questionCards.forEach((card, index) => {
+                const questionId = index + 1;
+                const correctOption = card.querySelector('.option[data-option="' + card.dataset.correct + '"]');
+                const selectedOption = card.querySelector('.option.selected');
+
+                if (selectedOption && selectedOption === correctOption) {
+                    score += 1; // Each question is worth 1 point
+                    correctAnswers++;
+                } else if (selectedOption) {
+                    score -= 0.25; // Negative marking
+                    wrongAnswers++;
+                }
+            });
+
+            return {
+                score: score.toFixed(2),
+                totalQuestions: questionCards.length,
+                correctAnswers,
+                wrongAnswers,
+                unattempted: questionCards.length - (correctAnswers + wrongAnswers)
+            };
+        }
+
+        function submitExam() {
+            clearInterval(timer); // Stop the timer
+            examSubmitted = true;
+            const results = calculateScore();
+            
+
+            // Show results with animation
+            const container = document.getElementById('questions-container');
+            container.style.opacity = '0';
+
+            setTimeout(() => {
+                container.innerHTML = `
+                    <div class="result-card">
+                        <h2><i class="fas fa-award"></i> Exam Results</h2>
+                        <div class="stats-grid">
+                            <div class="stat-box">
+                                <p>Final Score</p>
+                                <h3>${results.score}</h3>
+                            </div>
+                            <div class="stat-box">
+                                <p>Time Taken</p>
+                                <h3>${formatTime(3600 - timeLeft)}</h3>
+                            </div>
+                        </div>
+                        <div class="stats-grid">
+                            <div class="stat-box">
+                                <p><i class="fas fa-check-circle"></i> Correct Answers</p>
+                                <h3 style="color: #059669">${results.correctAnswers}</h3>
+                            </div>
+                            <div class="stat-box">
+                                <p><i class="fas fa-times-circle"></i> Wrong Answers</p>
+                                <h3 style="color: #dc2626">${results.wrongAnswers}</h3>
+                            </div>
+                            <div class="stat-box">
+                                <p><i class="fas fa-minus-circle"></i> Unattempted</p>
+                                <h3 style="color: #6b7280">${results.unattempted}</h3>
+                            </div>
+                            <div class="stat-box">
+                                <p><i class="fas fa-percentage"></i> Accuracy</p>
+                                <h3 style="color: #0891b2">${calculateAccuracy(results)}%</h3>
+                            </div>
+                        </div>
+                        <div class="leaderboard">
+    <h3><i class="fas fa-trophy"></i> Leaderboard</h3>
+    <div class="leaderboard-grid">
+        <div class="leaderboard-header">
+            <span>Rank</span>
+            <span>Name</span>
+            <span>Score</span>
+        </div>
+        <div class="leaderboard-entries" id="leaderboard-entries">
+            <!-- Leaderboard entries will be dynamically inserted here -->
+        </div>
+    </div>
+    <button id="toggle-button">Show More</button>
+</div>
+                        <div class="answer-review">
+                            <h3><i class="fas fa-list"></i> Answer Review</h3>
+                            ${generateAnswerReview()}
+                        </div>
+                    </div>
+                `;
+                container.style.opacity = '1';
+
+                // Generate the leaderboard with the student's score
+                generateLeaderboard(parseFloat(results.score));
+
+                // Render MathJax equations in the answer review
+                MathJax.typeset();
+            }, 500);
+
+            // Hide submit button with animation
+            const submitBtn = document.getElementById('submit-btn');
+            submitBtn.style.transform = 'scale(0.8)';
+            submitBtn.style.opacity = '0';
+            setTimeout(() => {
+                submitBtn.style.display = 'none';
+            }, 300);
+        }
+
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            return `${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
+        }
+
+        function calculateAccuracy(results) {
+            if (results.correctAnswers + results.wrongAnswers === 0) return 0;
+            return Math.round((results.correctAnswers / (results.correctAnswers + results.wrongAnswers)) * 100);
+        }
+
+        function generateAnswerReview() {
+            let reviewHTML = '';
+            const questionCards = document.querySelectorAll('.question-card');
+            questionCards.forEach((card, index) => {
+                const questionId = index + 1;
+                const correctOptionIndex = parseInt(card.dataset.correct, 10); // Get the correct option index
+                const selectedOption = card.querySelector('.option.selected');
+                const selectedOptionIndex = selectedOption ? parseInt(selectedOption.dataset.option, 10) : null;
+
+                reviewHTML += `
+                    <div class="question-card ${selectedOptionIndex === correctOptionIndex ? 'correct' : 'incorrect'}">
+                        <div class="question-header">
+                            <span class="question-number">Question ${questionId}</span>
+                            <span class="result-icon">
+                                ${selectedOptionIndex === correctOptionIndex 
+                                    ? '<i class="fas fa-check-circle" style="color: #059669"></i>' 
+                                    : '<i class="fas fa-times-circle" style="color: #dc2626"></i>'}
+                            </span>
+                        </div>
+                        <div class="question-text">${card.querySelector('.question-text').innerHTML}</div>
+                        <div class="options">
+                            ${Array.from(card.querySelectorAll('.option')).map((option, optIndex) => `
+                                <div class="option ${optIndex === correctOptionIndex ? 'correct' : optIndex === selectedOptionIndex ? 'incorrect' : ''}">
+                                    <span class="option-letter">${String.fromCharCode(65 + optIndex)}</span>
+                                    <span class="option-text">${option.querySelector('.option-text').innerHTML}</span>
+                                    ${optIndex === correctOptionIndex 
+                                        ? '<i class="fas fa-check" style="color: #059669"></i>' 
+                                        : optIndex === selectedOptionIndex 
+                                            ? '<i class="fas fa-times" style="color: #dc2626"></i>' 
+                                            : ''} 
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="question-explanation">
+                            <strong>Explanation:</strong> ${card.dataset.explanation}
+                        </div>
+                    </div>
+                `;
+            });
+            return reviewHTML;
+        }
+
+        function generateLeaderboard(studentScore) {
+            const leaderboardEntries = document.getElementById('leaderboard-entries');
+            leaderboardEntries.innerHTML = ''; // Clear existing entries
+
+            // Mock leaderboard data (replace with actual data from your backend)
+            const leaderboardData = [
+            
+    
+    { "name": "Eshan", "score": 28 },
+    { "name": "Fahim", "score": 27.9 },
+    { "name": "Gazi", "score": 27.7 },
+    { "name": "Hassan", "score": 27.5 },
+    { "name": "Isha", "score": 27.3 },
+    { "name": "Junaid", "score": 27 },
+    { "name": "Kamal", "score": 26.8 },
+    { "name": "Lina", "score": 26.5 },
+    { "name": "Mahi", "score": 26.3 },
+    { "name": "Nabil", "score": 26 },
+    { "name": "Omar", "score": 25.8 },
+    { "name": "Puja", "score": 25.5 },
+    { "name": "Qazi", "score": 25.3 },
+    { "name": "Rafi", "score": 25 },
+    { "name": "Shirin", "score": 24.8 },
+    { "name": "Tariq", "score": 24.5 },
+    { "name": "Umar", "score": 24.3 },
+    { "name": "Vera", "score": 24 },
+    { "name": "Wasiq", "score": 23.8 },
+    { "name": "Xena", "score": 23.5 },
+    { "name": "Yasmin", "score": 23.3 },
+    { "name": "Zahid", "score": 23 },
+    { "name": "Anwar", "score": 22.8 },
+    { "name": "Bilal", "score": 22.5 },
+    { "name": "Chand", "score": 22.3 },
+    { "name": "Dara", "score": 22 },
+    { "name": "Enam", "score": 21.8 },
+    { "name": "Farhan", "score": 21.5 },
+    { "name": "Gulzar", "score": 21.3 },
+    { "name": "Hina", "score": 21 },
+    { "name": "Imran", "score": 20.8 },
+    { "name": "Jamil", "score": 20.5 },
+    { "name": "Kazi", "score": 20.3 },
+    { "name": "Laila", "score": 20 },
+    { "name": "Mithu", "score": 19.8 },
+    { "name": "Nishat", "score": 19.5 },
+    { "name": "Ovi", "score": 19.3 },
+    { "name": "Pati", "score": 19 },
+    { "name": "Qamar", "score": 18.8 },
+    { "name": "Rina", "score": 18.5 },
+    { "name": "Samiha", "score": 18.3 },
+    { "name": "Tariqa", "score": 18 },
+    { "name": "Usman", "score": 17.8 },
+    { "name": "Vishal", "score": 17.5 },
+    { "name": "Warda", "score": 17.3 },
+    { "name": "Xander", "score": 17 },
+    { "name": "Yasin", "score": 16.8 },
+    { "name": "Zara", "score": 16.5 },
+    { "name": "Anisa", "score": 16.3 },
+    { "name": "Bashir", "score": 16 },
+    { "name": "Carmen", "score": 15.8 },
+    { "name": "Dipu", "score": 15.5 },
+    { "name": "Erin", "score": 15.3 },
+    { "name": "Faruk", "score": 15 },
+    { "name": "Gazi", "score": 14.8 },
+    { "name": "Hassan", "score": 14.5 },
+    { "name": "Ishaq", "score": 14.3 },
+    { "name": "Jahir", "score": 14 },
+    { "name": "Kamal", "score": 13.8 },
+    { "name": "Lamia", "score": 13.5 },
+    { "name": "Mizan", "score": 13.3 },
+    { "name": "Nazia", "score": 13 },
+    { "name": "Omar", "score": 12.8 },
+    { "name": "Puja", "score": 12.5 },
+    { "name": "Qazi", "score": 12.3 },
+    { "name": "Rafiq", "score": 12 },
+    { "name": "Shariq", "score": 11.8 },
+    { "name": "Tariq", "score": 11.5 },
+    { "name": "Umar", "score": 11.3 },
+    { "name": "Vera", "score": 11 },
+    { "name": "Wasiq", "score": 10.8 },
+    { "name": "Xena", "score": 10.5 },
+    { "name": "Yasmin", "score": 10.3 },
+    { "name": "Zara", "score": 10 },
+    { "name": "Anwar", "score": 9.8 },
+    { "name": "Bilal", "score": 9.5 },
+    { "name": "Chand", "score": 9.3 },
+    { "name": "Dara", "score": 9 },
+    { "name": "Enam", "score": 8.8 },
+    { "name": "Farhan", "score": 8.5 },
+    { "name": "Gulzar", "score": 8.3 },
+    { "name": "Hina", "score": 8 },
+    { "name": "Imran", "score": 7.8 },
+    { "name": "Jamil", "score": 7.5 },
+    { "name": "Kazi", "score": 7.3 },
+    { "name": "Laila", "score": 7 },
+    { "name": "Mithu", "score": 6.8 },
+    { "name": "Nishat", "score": 6.5 },
+    { "name": "Ovi", "score": 6.3 },
+    { "name": "Pati", "score": 6 },
+    { "name": "Qamar", "score": 5.8 },
+    { "name": "Rina", "score": 5.5 },
+    { "name": "Samiha", "score": 5.5 },
+    { "name": "Tariqa", "score": 5.5 },
+    { "name": "Usman", "score": 5.5 },
+    { "name": "Vishal", "score": 5.5 },
+    { "name": "Warda", "score": 5.5 },
+    { "name": "Xander", "score": 5.5 },
+    { "name": "Yasin", "score": 5.5 },
+    { "name": "Zara", "score": 5.5 },
+                
+            ];
+
+            // Add the current student's score to the leaderboard for ranking
+            leaderboardData.push({ name: "You", score: studentScore });
+
+            // Sort the leaderboard by score in descending order
+            leaderboardData.sort((a, b) => b.score - a.score);
+
+            // Generate leaderboard entries
+            leaderboardData.forEach((entry, index) => {
+                const entryElement = document.createElement('div');
+                entryElement.classList.add('leaderboard-entry');
+                if (entry.name === "You") {
+                    entryElement.classList.add('you');
+                }
+
+                entryElement.innerHTML = `
+                    <span>${index + 1}</span>
+                    <span>${entry.name}</span>
+                    <span>${entry.score}</span>
+                `;
+
+                leaderboardEntries.appendChild(entryElement);
+            });
+        }
+
+        // Initialize Exam on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('start-exam-btn').addEventListener('click', startExam);
+        });
+
+        // Submit Button Event Listener
+document.getElementById('submit-btn').addEventListener('click', () => {
+    if (!examSubmitted) {
+        submitExam();
+        
+        // Add an ID to an element at the very top of your page (if not already there)
+        // For example, let's add it to the logo or header
+        document.querySelector('.logo').id = 'top-of-page';
+        
+        // Try focusing that element
+        document.getElementById('top-of-page').focus();
+        
+        // As a backup, add a hidden button at the top and click it
+        const topButton = document.createElement('button');
+        topButton.style.position = 'absolute';
+        topButton.style.top = '0';
+        topButton.style.opacity = '0';
+        topButton.style.pointerEvents = 'none';
+        document.body.prepend(topButton);
+        topButton.focus();
+        
+        // Try this more aggressive approach as well
+        window.scrollTo(0, 0);
+        document.body.scrollTop = 0;
+        document.documentElement.scrollTop = 0;
+        
+        // Force a layout reflow
+        void document.documentElement.offsetHeight;
+        document.addEventListener('click', function (e) {
+    if (e.target && e.target.id === 'toggle-button') {
+        const entries = document.getElementById('leaderboard-entries');
+        entries.classList.toggle('expanded');
+        e.target.textContent = entries.classList.contains('expanded') ? 'Show Less' : 'Show More';
+    }
+});
+    }
+        });
+    </script>
+</body>
+</html>

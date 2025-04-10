@@ -1,0 +1,433 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+body {
+    background-color: #121212; /* Dark background */
+    color: #e5e7eb; /* Lighter text color */
+    line-height: 1.5;
+}
+
+.exam-container {
+    min-height: 100vh;
+    padding-bottom: 80px; /* Ensures space for footer or submit button */
+    position: relative;
+}
+
+.header {
+    background-color: #1f2937; /* Dark header */
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.header-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 1rem;
+}
+
+.logo {
+    font-size: 1.5rem;
+    font-weight: 600;
+    background-image: linear-gradient(to right, #A0522D, #FFD700, #FFFFFF); /* Brownish to Yellow to White gradient */
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent; /* Make the text transparent to show the gradient */
+  }
+
+.user-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+.user-actions button {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    position: relative;
+    padding: 0.5rem;
+    border-radius: 50%;
+    transition: background-color 0.2s;
+    color: #e5e7eb; /* Button color */
+}
+
+.user-actions button:hover {
+    background-color: #374151; /* Dark hover effect */
+}
+
+.notification-badge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background-color: #ef4444;
+    color: white;
+    font-size: 0.75rem;
+    padding: 0.25rem;
+    border-radius: 50%;
+    min-width: 1.5rem;
+    height: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.main-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+    padding-bottom: 80px; /* Ensures space for button */
+}
+
+.exam-title {
+    background: linear-gradient(135deg, #10b981 0%, #047857 100%);
+    color: white;
+    padding: 1.5rem;
+    border-radius: 1rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+}
+
+.exam-title h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.exam-title span {
+    font-size: 0.875rem;
+    opacity: 0.9;
+}
+
+.question-card {
+    background-color: #1f2937; /* Dark question card */
+    border-radius: 1rem;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s, box-shadow 0.2s;
+    color: #e5e7eb;
+}
+
+.question-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 8px -1px rgba(0, 0, 0, 0.3);
+}
+
+.question-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #374151;
+}
+
+.question-number {
+    font-weight: 600;
+    color: #10b981; /* Green number */
+}
+
+.points-badge {
+    background-color: #1f2937;
+    color: #10b981;
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.question-text {
+    margin-bottom: 1.5rem;
+    font-size: 1.125rem;
+    color: #e5e7eb;
+}
+
+/* Ensure MathJax equations are properly styled */
+.MathJax {
+    color: #e5e7eb; /* Match the text color */
+    font-size: 1.125rem; /* Match the font size of the question text */
+    line-height: 1.5; /* Ensure proper line spacing */
+}
+
+/* Prevent equations from overflowing */
+.MathJax_Display {
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+.question-image {
+    max-width: 100%;
+    border-radius: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.option {
+    padding: 1rem 1.25rem;
+    border: 2px solid #374151;
+    border-radius: 0.75rem;
+    margin-bottom: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background-color: #2d3748; /* Dark background for options */
+    color: #e5e7eb;
+}
+
+.option:hover {
+    background-color: #4a5568;
+    border-color: #2d3748;
+}
+
+.option.selected {
+    background-color: #ebf2ec;
+    border-color: #10b981;
+    color: #065f46;
+}
+
+.option-letter {
+    font-weight: 600;
+    color: #e5e7eb;
+}
+
+.option.selected .option-letter {
+    color: #10b981;
+}
+
+.option.selected .option-text {
+    color: #065f46;
+}
+
+/* Ensure MathJax equations in options are properly styled */
+.option .MathJax {
+    font-size: 1rem;
+    color: inherit;
+}
+
+.submit-button {
+    background: linear-gradient(135deg, #10b981 0%, #047857 100%);
+    color: white;
+    padding: 1rem 2.5rem;
+    border: none;
+    border-radius: 0.75rem;
+    font-size: 1.125rem;
+    font-weight: 500;
+    cursor: pointer;
+    display: block;
+    margin: 2rem auto;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+}
+
+.submit-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 8px -1px rgba(0, 0, 0, 0.3);
+}
+
+#generate-exam-btn {
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+}
+
+.status-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: #1f2937; /* Dark status bar */
+    padding: 1rem;
+    box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.2);
+}
+
+.status-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 1rem;
+}
+
+.status-pill {
+    background: linear-gradient(135deg, #10b981 0%, #047857 100%);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.75rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+}
+
+.result-card {
+    background-color: #1f2937; /* Dark result card */
+    border-radius: 1rem;
+    padding: 2rem;
+    margin-top: 2rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+    color: #e5e7eb;
+}
+
+.result-card h2 {
+    color: #10b981;
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin: 1.5rem 0;
+}
+
+.stat-box {
+    background-color: #2d3748; /* Dark stat box */
+    padding: 1.5rem;
+    border-radius: 0.75rem;
+    border: 1px solid #374151;
+}
+
+.stat-box p {
+    color: #e5e7eb;
+    margin-bottom: 0.5rem;
+}
+
+.stat-box h3 {
+    color: #10b981;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+/* Leaderboard Styles */
+.leaderboard {
+    margin-top: 2rem;
+    background-color: #2d3748;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+}
+
+.leaderboard h3 {
+    color: #10b981;
+    margin-bottom: 1.5rem;
+    font-size: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.leaderboard-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.leaderboard-header {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 1rem;
+    background-color: #374151;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    color: #e5e7eb;
+}
+
+.leaderboard-entries {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.leaderboard-entry {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    background-color: #374151;
+    border-radius: 0.5rem;
+    color: #e5e7eb;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.leaderboard-entry:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+}
+
+.leaderboard-entry.you {
+    background-color: #10b981;
+    color: #065f46;
+    font-weight: 600;
+}
+
+.leaderboard-entry span {
+    flex: 1;
+    text-align: center;
+}
+#toggle-button {
+    display: block;
+    margin: 10px auto;
+    padding: 8px 12px;
+    font-size: 14px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    text-align: center; /* Ensures the text is centered */
+}
+
+#toggle-button:hover {
+    background-color: #0056b3;
+}
+
+/* Animation for leaderboard entries */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.leaderboard-entry {
+    animation: slideIn 0.5s ease-out;
+}
+
+/* Additional styles for MathJax equations */
+.MathJax {
+    color: #e5e7eb; /* Ensure equations match the text color */
+}
+
+/* Hide explanation during the exam */
+.question-explanation {
+    display: none;
+}
+
+/* Show explanation after submission */
+.result-card .question-explanation {
+    display: block;
+    margin-top: 1rem;
+    padding: 1rem;
+    background-color: #2d3748;
+    border-radius: 0.75rem;
+    border: 1px solid #374151;
+    overflow-wrap: break-word; /* Keep this */
+    overflow-x: auto; /* Add this line */
+    white-space: nowrap; /* Consider adding this to prevent wrapping and force scroll */
+}
